@@ -57,10 +57,6 @@
 
   var selectedReports = [MANDATORY];
   var selectedSpeed = 'standard';
-  var currentStep = 1;
-  var tooltipTimeouts = {};
-
-  function isMobile() { return window.innerWidth <= 600; }
 
   function getStateFromURL() {
     var p = new URLSearchParams(window.location.search);
@@ -72,7 +68,7 @@
         return {selectedReports:arr, selectedSpeed:s||'standard'};
       }
     }
-    return null;
+    return {selectedReports:[MANDATORY], selectedSpeed:s||'standard'};
   }
 
   function updateURL() {
@@ -137,111 +133,114 @@
     if (list) setTimeout(function(){list.scrollTop=list.scrollHeight;},50);
   }
 
-    function updateAll() {
-      updateURL();
-      updateReportsCount();
-      updateSubtotal();
-      updateCostSummary();
-      updateClearAll();
-      document.querySelectorAll('.bb-report-card').forEach(function(card) {
-        var id = card.getAttribute('data-report-id');
-        if (selectedReports.indexOf(id) !== -1) {
-          card.classList.add('selected');
-        } else {
-          card.classList.remove('selected');
-        }
-      });
-      document.querySelectorAll('.bb-speed-option').forEach(function(opt) {
-        var spd = opt.getAttribute('data-speed');
-        if (spd === selectedSpeed) {
-          opt.classList.add('active');
-        } else {
-          opt.classList.remove('active');
-        }
-      });
-      var totalEl = document.getElementById('bbTotalPrice');
-      if (totalEl) totalEl.textContent = '$' + totalPrice();
-      var checkoutBtn = document.getElementById('bbCheckout');
-      if (checkoutBtn) {
-        checkoutBtn.style.opacity = selectedReports.length > 0 ? '1' : '0.5';
-        checkoutBtn.style.pointerEvents = selectedReports.length > 0 ? 'auto' : 'none';
-      }
-    }
-
-    function toggleReport(id) {
-      var idx = selectedReports.indexOf(id);
-      if (idx === -1) {
-        if (id === MANDATORY) return;
-        selectedReports.push(id);
+  function updateAll() {
+    updateURL();
+    updateReportsCount();
+    updateSubtotal();
+    updateCostSummary();
+    updateClearAll();
+    document.querySelectorAll('.bb-report-item').forEach(function(item) {
+      var id = item.getAttribute('data-report-id');
+      if (selectedReports.indexOf(id) !== -1) {
+        item.classList.add('selected');
+        var cb = item.querySelector('.bb-report-checkbox');
+        if (cb) cb.checked = true;
       } else {
-        if (id === MANDATORY) return;
-        selectedReports.splice(idx, 1);
+        item.classList.remove('selected');
+        var cb = item.querySelector('.bb-report-checkbox');
+        if (cb) cb.checked = false;
       }
-      updateAll();
+    });
+    document.querySelectorAll('.bb-speed-option').forEach(function(opt) {
+      var spd = opt.getAttribute('data-speed');
+      if (spd === selectedSpeed) {
+        opt.classList.add('selected');
+      } else {
+        opt.classList.remove('selected');
+      }
+    });
+    var totalEl = document.getElementById('bbTotalPrice');
+    if (totalEl) totalEl.textContent = '$' + totalPrice();
+    var checkoutBtn = document.getElementById('bbCheckout');
+    if (checkoutBtn) {
+      checkoutBtn.style.opacity = selectedReports.length > 0 ? '1' : '0.5';
+      checkoutBtn.style.pointerEvents = selectedReports.length > 0 ? 'auto' : 'none';
     }
+  }
 
-    function setSpeed(speed) {
-      selectedSpeed = speed;
-      updateAll();
-    }
-
-    function clearAll() {
-      selectedReports = [MANDATORY];
-      updateAll();
-    }
-
-    function renderReports() {
-      var container = document.getElementById('bbReportsList');
-      if (!container) return;
-      container.innerHTML = '';
-      reports.forEach(function(r) {
-        var card = document.createElement('div');
-        card.className = 'bb-report-card' + (selectedReports.indexOf(r.id) !== -1 ? ' selected' : '') + (r.id === MANDATORY ? ' mandatory' : '');
-        card.setAttribute('data-report-id', r.id);
-        var checkbox = '<div class="bb-checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>';
-        var label = '<span class="bb-report-name">' + r.name + '</span>';
-        var mandatory = r.id === MANDATORY ? '<span class="bb-mandatory-tag">Included</span>' : '';
-        card.innerHTML = checkbox + '<div class="bb-report-info">' + label + mandatory + '</div>';
-        if (r.id !== MANDATORY) {
-          card.addEventListener('click', function() { toggleReport(r.id); });
-        }
-        container.appendChild(card);
-      });
-    }
-
-    function renderSpeedOptions() {
-      var container = document.getElementById('bbSpeedOptions');
-      if (!container) return;
-      var speeds = [{id:'standard',label:'Standard',desc:'4-6 weeks'},{id:'expedited',label:'Expedited',desc:'2-3 weeks'},{id:'ultra',label:'Ultra Rapid',desc:'5-7 days'}];
-      container.innerHTML = '';
-      speeds.forEach(function(s) {
-        var opt = document.createElement('div');
-        opt.className = 'bb-speed-option' + (s.id === selectedSpeed ? ' active' : '');
-        opt.setAttribute('data-speed', s.id);
-        opt.innerHTML = '<div class="bb-speed-label">' + s.label + '</div><div class="bb-speed-desc">' + s.desc + '</div>';
-        opt.addEventListener('click', function() { setSpeed(s.id); });
-        container.appendChild(opt);
-      });
-    }
-
-    function init() {
-      var state = parseURL();
-      selectedReports = state.selectedReports;
-      selectedSpeed = state.selectedSpeed;
-      renderReports();
-      renderSpeedOptions();
-      updateAll();
-      document.querySelectorAll('.bb-clear-all').forEach(function(el) {
-        el.addEventListener('click', function(e) {
-          e.preventDefault();
-          clearAll();
-        });
-      });
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
+  function toggleReport(id) {
+    var idx = selectedReports.indexOf(id);
+    if (idx === -1) {
+      selectedReports.push(id);
     } else {
-      init();
+      if (id === MANDATORY) return;
+      selectedReports.splice(idx, 1);
     }
-  })();
+    updateAll();
+  }
+
+  function setSpeed(speed) {
+    selectedSpeed = speed;
+    updateAll();
+  }
+
+  function clearAll() {
+    selectedReports = [MANDATORY];
+    updateAll();
+  }
+
+  function renderReports() {
+    var container = document.getElementById('bbReportsGrid');
+    if (!container) return;
+    container.innerHTML = '';
+    reports.forEach(function(r) {
+      var item = document.createElement('div');
+      var isSelected = selectedReports.indexOf(r.id) !== -1;
+      var isMandatory = r.id === MANDATORY;
+      item.className = 'bb-report-item' + (isSelected ? ' selected' : '');
+      item.setAttribute('data-report-id', r.id);
+      item.innerHTML = '<input type="checkbox" class="bb-report-checkbox"' + (isSelected ? ' checked' : '') + (isMandatory ? ' disabled' : '') + '>' +
+        '<label>' + r.name + (isMandatory ? ' (Included)' : '') + '</label>';
+      if (!isMandatory) {
+        item.addEventListener('click', function() { toggleReport(r.id); });
+      }
+      container.appendChild(item);
+    });
+  }
+
+  function renderSpeedOptions() {
+    var container = document.getElementById('bbSpeedOptions');
+    if (!container) return;
+    var speeds = [{id:'standard',label:'Standard',desc:'4-6 weeks'},{id:'expedited',label:'Expedited',desc:'2-3 weeks'},{id:'ultra',label:'Ultra Rapid',desc:'5-7 days'}];
+    container.innerHTML = '';
+    speeds.forEach(function(s) {
+      var opt = document.createElement('div');
+      opt.className = 'bb-speed-option' + (s.id === selectedSpeed ? ' selected' : '');
+      opt.setAttribute('data-speed', s.id);
+      opt.innerHTML = '<div class="bb-speed-label">' + s.label + '</div><div class="bb-speed-pricing">' + s.desc + '</div>';
+      opt.addEventListener('click', function() { setSpeed(s.id); });
+      container.appendChild(opt);
+    });
+  }
+
+  function init() {
+    var state = getStateFromURL();
+    selectedReports = state.selectedReports;
+    selectedSpeed = state.selectedSpeed;
+    renderReports();
+    renderSpeedOptions();
+    updateAll();
+    document.querySelectorAll('.bb-clear-all').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.preventDefault();
+        clearAll();
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
