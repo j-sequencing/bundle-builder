@@ -1,0 +1,32 @@
+<div class="bb-wrapper">
+  <div class="bb-main">
+    <div class="bb-header">
+      <h2 class="bb-title">Build Your Bundle</h2>
+      <p class="bb-subtitle">Select your reports and processing speed below.</p>
+    </div>
+    <div class="bb-reports-section">
+      <div class="bb-section-header">
+        <h3 id="bbReportsCount">My Reports (1)</h3>
+        <a href="#" class="bb-clear-all" style="display:none;">Clear All</a>
+      </div>
+      <div id="bbReportsList" class="bb-reports-list"></div>
+    </div>
+  </div>
+  <div class="bb-sidebar">
+    <div class="bb-speed-section">
+      <h3 class="bb-section-title">Processing Speed</h3>
+      <div id="bbSpeedOptions" class="bb-speed-options"></div>
+    </div>
+    <div class="bb-summary">
+      <h3 class="bb-section-title">Order Summary</h3>
+      <div id="bbCostBreakdown" class="bb-cost-breakdown"></div>
+      <div class="bb-total-row">
+        <span>Total</span>
+        <span id="bbTotalPrice" class="bb-total-price">$0</span>
+      </div>
+      <button id="bbCheckout" class="bb-checkout-btn" style="opacity:0.5;pointer-events:none;">Proceed to Checkout</button>
+    </div>
+  </div>
+</div>
+<link rel="stylesheet" href="https://j-sequencing.github.io/bundle-builder/bundle-builder.css">
+<script src="https://j-sequencing.github.io/bundle-builder/bundle-builder.js"></script>
